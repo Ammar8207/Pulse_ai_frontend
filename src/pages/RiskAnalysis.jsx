@@ -39,10 +39,10 @@ function normalizeFeatureImportance(payload) {
 
   if (!items.length) {
     return [
-      { feature: 'Contract Type', importance: 0.32 },
-      { feature: 'Monthly Charges', importance: 0.28 },
-      { feature: 'Tenure', importance: 0.21 },
-      { feature: 'Tech Support', importance: 0.19 },
+      { feature: 'Days Since Last Purchase', importance: 0.34 },
+      { feature: 'Total Spend', importance: 0.27 },
+      { feature: 'Total Transactions', importance: 0.22 },
+      { feature: 'Customer Lifetime', importance: 0.17 },
     ];
   }
 
@@ -52,11 +52,14 @@ function normalizeFeatureImportance(payload) {
     }
 
     return {
-      feature: item.feature ?? item.name ?? item.label ?? `Feature ${index + 1}`,
-      importance: Number(item.importance ?? item.score ?? item.value ?? item.weight ?? 0),
+      // Backend returns 'feature_name'
+      feature: item.feature_name ?? item.feature ?? item.name ?? item.label ?? `Feature ${index + 1}`,
+      // Backend returns 'importance_score'
+      importance: Number(item.importance_score ?? item.importance ?? item.score ?? item.value ?? item.weight ?? 0),
     };
   });
 }
+
 
 function LoadingSkeleton() {
   return (

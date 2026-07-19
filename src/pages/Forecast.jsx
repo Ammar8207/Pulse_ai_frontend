@@ -38,8 +38,15 @@ function normalizeSeries(series) {
 
     if (point && typeof point === 'object') {
       return {
-        label: point.label ?? point.month ?? point.name ?? defaultSeries[index]?.label ?? `P${index + 1}`,
-        value: Number(point.value ?? point.y ?? point.count ?? point.amount ?? 0),
+        // Backend returns 'date' (ISO string) — format to short month label
+        label:
+          point.date
+            ? new Date(point.date).toLocaleDateString('en-US', { month: 'short' })
+            : (point.label ?? point.month ?? point.name ?? defaultSeries[index]?.label ?? `P${index + 1}`),
+        // Backend returns 'predicted_value'
+        value: Number(
+          point.predicted_value ?? point.value ?? point.y ?? point.count ?? point.amount ?? 0,
+        ),
       };
     }
 
@@ -128,12 +135,19 @@ export default function Forecast() {
 
         if (active) {
           setForecastData({
-            revenueForecast: normalizeSeries(data.revenueForecast ?? data.revenue_forecast ?? data.revenue ?? data[0]),
-            customerGrowth: normalizeSeries(data.customerGrowth ?? data.customer_growth ?? data.growth ?? data[1]),
-            activeCustomersTrend: normalizeSeries(
-              data.activeCustomersTrend ?? data.active_customers_trend ?? data.activeCustomers ?? data[2],
+            // Backend keys: revenue_forecast, customer_growth_forecast, active_customers_forecast, churn_trend_forecast
+            revenueForecast: normalizeSeries(
+              data.revenue_forecast ?? data.revenueForecast ?? data.revenue ?? data[0],
             ),
-            churnTrend: normalizeSeries(data.churnTrend ?? data.churn_trend ?? data.churn ?? data[3]),
+            customerGrowth: normalizeSeries(
+              data.customer_growth_forecast ?? data.customerGrowth ?? data.customer_growth ?? data.growth ?? data[1],
+            ),
+            activeCustomersTrend: normalizeSeries(
+              data.active_customers_forecast ?? data.activeCustomersTrend ?? data.active_customers_trend ?? data.activeCustomers ?? data[2],
+            ),
+            churnTrend: normalizeSeries(
+              data.churn_trend_forecast ?? data.churnTrend ?? data.churn_trend ?? data.churn ?? data[3],
+            ),
           });
         }
       } catch (requestError) {

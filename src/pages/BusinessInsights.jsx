@@ -135,6 +135,32 @@ export default function BusinessInsights() {
   }, []);
 
   const metrics = useMemo(() => {
+    // Backend returns flat fields: total_revenue, active_customers, churn_rate, total_customers
+    // Map them into the KPI card structure
+    if (summary && (summary.total_customers !== undefined || summary.active_customers !== undefined)) {
+      return [
+        {
+          title: 'Total Revenue',
+          value: summary.total_revenue != null ? `$${Number(summary.total_revenue).toLocaleString()}` : '$0',
+          change: 0,
+          icon: TrendingUp,
+        },
+        {
+          title: 'Active Customers',
+          value: summary.active_customers != null ? Number(summary.active_customers).toLocaleString() : '0',
+          change: 0,
+          icon: UserRoundCheck,
+        },
+        {
+          title: 'Churn Rate',
+          value: summary.churn_rate != null ? `${Number(summary.churn_rate).toFixed(1)}%` : '0%',
+          change: 0,
+          icon: TrendingDown,
+        },
+      ];
+    }
+
+    // Fallback: try legacy array format
     const source = Array.isArray(summary?.metrics)
       ? summary.metrics
       : Array.isArray(summary?.kpis)
@@ -155,11 +181,15 @@ export default function BusinessInsights() {
   }, [summary]);
 
   const actions = useMemo(() => {
+    // Backend may return forecast_summary as a string — surface it as first action item
+    const backendSummary = summary?.forecast_summary;
     const source = Array.isArray(summary?.actions)
       ? summary.actions
       : Array.isArray(summary?.actionItems)
         ? summary.actionItems
-        : defaultSummary.actions;
+        : backendSummary
+          ? [backendSummary, ...defaultSummary.actions.slice(1)]
+          : defaultSummary.actions;
 
     return source.map((item, index) =>
       typeof item === 'string'
