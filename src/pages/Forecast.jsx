@@ -132,6 +132,7 @@ export default function Forecast() {
       try {
         const response = await apiClient.get('/forecast');
         const data = response.data ?? {};
+        console.log('[Forecast] raw API response:', JSON.stringify(data, null, 2));
 
         if (active) {
           setForecastData({
